@@ -5,3 +5,4 @@ football-players-detection/*
 *.zip
 .ipynb_checkpoints
 __pycache__
+Results/*
