@@ -22,7 +22,7 @@ from torch.optim import lr_scheduler
 import json
 
 
-num_classes = 2 # 0=ball, 1=player
+num_classes = 3 # 1=ball, 2=player
 
 
 # set the device (GPU is much faster)

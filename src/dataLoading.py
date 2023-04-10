@@ -30,9 +30,9 @@ class playersDataset(Dataset):
  
         with open(file_path) as f:
             for row in f:
-                annotation = [float(x) for x in row.split()]
+                annotation = [float(x) for x in row.split()]  
                 #print(annotation)
-                labels.append(int(annotation[0]))
+                labels.append(int(annotation[0])+1)  # add 1, so that the background class is 0
                 [x0, y0, x1, y1] = annotation[1:5]
                 boxes.append([x0, y0, x1, y1])
 
