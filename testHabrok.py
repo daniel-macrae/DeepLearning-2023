@@ -56,14 +56,16 @@ def get_args_parser(add_help=True):
 
     parser = argparse.ArgumentParser(description="PyTorch Detection Training", add_help=add_help)
 
-    parser.add_argument("--data-path", default="/Data", type=str, help="dataset path")
+    #parser.add_argument("--data-path", default="/Data", type=str, help="dataset path")
     # parser.add_argument("--dataset", default="coco", type=str, help="dataset name")
     # parser.add_argument("--model", default="maskrcnn_resnet50_fpn", type=str, help="model name")
     # parser.add_argument("--device", default="cuda", type=str, help="device (Use cuda or cpu Default: cuda)")
-    parser.add_argument(
-        "-b", "--batch-size", default=32, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
-    )
-    parser.add_argument("--epochs", default=50, type=int, metavar="N", help="number of total epochs to run")
+    
+    #parser.add_argument(
+    #    "-b", "--batch-size", default=32, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
+    #)
+    
+    parser.add_argument("--epochs", default=40, type=int, metavar="N", help="number of total epochs to run")
     # parser.add_argument(
     #     "-j", "--workers", default=4, type=int, metavar="N", help="number of data loading workers (default: 4)"
     # )
@@ -75,15 +77,15 @@ def get_args_parser(add_help=True):
         help="initial learning rate, 0.02 is the default value for training",
     )
     parser.add_argument("--momentum", default=0.9, type=float, metavar="M", help="momentum")
-    parser.add_argument(
-        "--wd",
-        "--weight-decay",
-        default=1e-4,
-        type=float,
-        metavar="W",
-        help="weight decay (default: 1e-4)",
-        dest="weight_decay",
-    )
+    #parser.add_argument(
+    #    "--wd",
+    #    "--weight-decay",
+    #    default=1e-4,
+    #    type=float,
+    #    metavar="W",
+    #    help="weight decay (default: 1e-4)",
+    #    dest="weight_decay",
+    #)
     # parser.add_argument(
     #     "--norm-weight-decay",
     #     default=None,
@@ -96,13 +98,13 @@ def get_args_parser(add_help=True):
     parser.add_argument(
         "--lr-step-size", default=8, type=int, help="decrease lr every step-size epochs (multisteplr scheduler only)"
     )
-    parser.add_argument(
-        "--lr-steps",
-        default=[16, 22],
-        nargs="+",
-        type=int,
-        help="decrease lr every step-size epochs (multisteplr scheduler only)",
-    )
+    #parser.add_argument(
+    #    "--lr-steps",
+    #    default=[16, 22],
+    #    nargs="+",
+    #    type=int,
+    #    help="decrease lr every step-size epochs (multisteplr scheduler only)",
+    #)
     parser.add_argument(
         "--lr-gamma", default=0.1, type=float, help="decrease lr by a factor of lr-gamma"
     )
@@ -163,12 +165,13 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
     losses_val = []
     accuracies_val = []
     
+    os.makedirs(args.output_dir, exist_ok = True)
     modelsFolder = os.path.join(args.output_dir, "Models")
     jsonFolder = os.path.join(args.output_dir, "JSONs")
     os.makedirs(modelsFolder, exist_ok = True)
     os.makedirs(jsonFolder, exist_ok = True)
 
-    model_name = f"model_{args.opt.lower()}_{args.lr}_{args.lr_gamma}_{args.momentum}"
+    model_name = f"model_opt:{args.opt.lower()}_epochs:{args.epochs}_lr:{args.lr}_lrstepsize:{args.lr_step_size}_lrgamma:{args.lr_gamma}_mom:{args.momentum}"
 
     for epoch in range(num_epochs):
         print(f'Epoch {epoch}/{num_epochs - 1}')
@@ -238,6 +241,7 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
             # if phase == 'val' and epoch_acc > best_acc:
             #     best_acc = epoch_acc
             #     best_model_wts = copy.deepcopy(model.state_dict())
+            """
             if phase == 'val' and epoch_loss < best_loss:
                 print(f'Best loss value epoch {epoch}')
                 best_loss = epoch_loss
@@ -249,6 +253,7 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
                     "epoch": epoch,
                 }
                 torch.save(checkpoint, os.path.join(modelsFolder, model_name+f"_{epoch}.pth"))
+            """
     
     time_elapsed = time.time() - since
     print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
@@ -268,7 +273,7 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
     # save the results file as a JSON
     results_dict = {"losses_train":losses_train, "accuracies":accuracies, "losses_val":losses_val, "accuracies_val":accuracies_val}
 
-    with open(os.path.join(jsonFolder, model_name+f"_results.text"), "w") as jsonFile:
+    with open(os.path.join(jsonFolder, model_name+f"_results.json"), "w") as jsonFile:
         json.dump(results_dict, jsonFile, sort_keys=True, indent=4) 
 
 
