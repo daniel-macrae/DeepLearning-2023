@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=testingSSDLite
-#SBATCH --time=1:30:00
+#SBATCH --time=10:00:00
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1

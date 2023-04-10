@@ -70,6 +70,7 @@ def get_args_parser(add_help=True):
     #     "-j", "--workers", default=4, type=int, metavar="N", help="number of data loading workers (default: 4)"
     # )
     parser.add_argument("--opt", default="sgd", type=str, help="optimizer")
+    parser.add_argument("--train-backbone", default=False, type=bool, help="optimizer")
     parser.add_argument(
         "--lr",
         default=0.01,
@@ -171,7 +172,7 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
     os.makedirs(modelsFolder, exist_ok = True)
     os.makedirs(jsonFolder, exist_ok = True)
 
-    model_name = f"model_opt:{args.opt.lower()}_epochs:{args.epochs}_lr:{args.lr}_lrstepsize:{args.lr_step_size}_lrgamma:{args.lr_gamma}_mom:{args.momentum}"
+    model_name = f"model_opt:{args.opt.lower()}_epochs:{args.epochs}_train_backbone:{args.train_backbone}_lr:{args.lr}_lrstepsize:{args.lr_step_size}_lrgamma:{args.lr_gamma}_mom:{args.momentum}"
 
     for epoch in range(num_epochs):
         print(f'Epoch {epoch}/{num_epochs - 1}')
@@ -284,16 +285,20 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
 def createModel(args):
     model = torchvision.models.detection.ssdlite320_mobilenet_v3_large(weights=None, num_classes=num_classes, weights_backbone=MobileNet_V3_Large_Weights.DEFAULT)
     # freeze all layers, except the output heads
-    for param in model.parameters():
-        param.requires_grad = False
-    for param in model.head.parameters():
-        param.requires_grad = True 
+    
+    if args.train_backbone == False:
+        for param in model.parameters():
+            param.requires_grad = False
+        for param in model.head.parameters():
+            param.requires_grad = True 
+    else:
+        for param in model.parameters():
+            param.requires_grad = True
+
     return model
 
 if __name__ == '__main__':
     args = get_args_parser().parse_args()
-    
-    
     
     model = createModel(args)
     model.to(device)
