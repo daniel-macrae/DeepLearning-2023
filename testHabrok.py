@@ -74,7 +74,7 @@ def get_args_parser(add_help=True):
     parser.add_argument(
         "-b", "--batch-size", default=32, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
     )
-    parser.add_argument("--epochs", default=20, type=int, metavar="N", help="number of total epochs to run")
+    parser.add_argument("--epochs", default=50, type=int, metavar="N", help="number of total epochs to run")
     # parser.add_argument(
     #     "-j", "--workers", default=4, type=int, metavar="N", help="number of data loading workers (default: 4)"
     # )
@@ -118,7 +118,7 @@ def get_args_parser(add_help=True):
         "--lr-gamma", default=0.1, type=float, help="decrease lr by a factor of lr-gamma"
     )
     # parser.add_argument("--print-freq", default=20, type=int, help="print frequency")
-    parser.add_argument("--output-dir", default=".", type=str, help="path to save outputs")
+    parser.add_argument("--output-dir", default="Results", type=str, help="path to save outputs")
     # parser.add_argument("--resume", default="", type=str, help="path of checkpoint")
     # parser.add_argument("--start_epoch", default=0, type=int, help="start epoch")
     # parser.add_argument("--aspect-ratio-group-factor", default=3, type=int)
@@ -290,7 +290,7 @@ if __name__ == '__main__':
     if opt_name.startswith("sgd"):
         optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
     elif opt_name == "adam":
-        optimizer = optim.Adam(parameters, lr=args.lr)
+        optimizer = optim.Adam(model.parameters(), lr=args.lr)
     else:
         raise RuntimeError(f"Invalid optimizer {args.opt}. Only SGD and Adam are supported.")
         

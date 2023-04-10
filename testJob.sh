@@ -10,3 +10,6 @@ conda create -n SSDLiteEnv python=3.8
 source activate SSDLiteEnv
 pip install -r requirements.txt
 python testHabrok.py
+python testHabrok.py --opt "adam"
+python testHabrok.py --lr 0.05
+python testHabrok.py --lr 0.001
