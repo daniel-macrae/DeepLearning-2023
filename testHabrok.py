@@ -165,6 +165,8 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
     
     modelsFolder = os.path.join(args.output_dir, "Models")
     jsonFolder = os.path.join(args.output_dir, "JSONs")
+    os.makedirs(modelsFolder, exist_ok = True)
+    os.makedirs(jsonFolder, exist_ok = True)
 
     for epoch in range(num_epochs):
         print(f'Epoch {epoch}/{num_epochs - 1}')
@@ -283,7 +285,8 @@ def createModel(args):
 
 if __name__ == '__main__':
     args = get_args_parser().parse_args()
-    os.makedirs(args.output_dir, exist_ok = True)
+    
+    
     
     model = createModel(args)
     model.to(device)
