@@ -23,23 +23,11 @@ from torch.optim import lr_scheduler
 
 num_classes = 2 # 0=ball, 1=player
 
-# load a model, where the backbone is already trained, and the output layers aren't (at least, this should be the case...)
-# also set the number of output classes to the number we need
-model = torchvision.models.detection.ssdlite320_mobilenet_v3_large(weights=None, num_classes=num_classes, weights_backbone=MobileNet_V3_Large_Weights.DEFAULT)
-
-
-# freeze all layers, except the output heads
-for param in model.parameters():
-    param.requires_grad = False
-for param in model.head.parameters():
-    param.requires_grad = True 
-
-
 
 # set the device (GPU is much faster)
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 print(device)
-model.to(device)
+
 
 
 num_workers = 4 if torch.cuda.is_available() else 0
