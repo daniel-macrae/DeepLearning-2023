@@ -4,3 +4,4 @@ SOD_Dataset/*
 football-players-detection/*
 *.zip
 .ipynb_checkpoints
+__pycache__
