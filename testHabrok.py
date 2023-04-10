@@ -168,7 +168,7 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
     os.makedirs(modelsFolder, exist_ok = True)
     os.makedirs(jsonFolder, exist_ok = True)
 
-    model_name = f"model_{args.opt.lower()}_{args.lr.lower()}_{args.lr_gamma.lower()}_{args.momentum.lower()}"
+    model_name = f"model_{args.opt.lower()}_{args.lr}_{args.lr_gamma}_{args.momentum}"
 
     for epoch in range(num_epochs):
         print(f'Epoch {epoch}/{num_epochs - 1}')
