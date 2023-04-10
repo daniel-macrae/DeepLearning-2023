@@ -168,6 +168,8 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
     os.makedirs(modelsFolder, exist_ok = True)
     os.makedirs(jsonFolder, exist_ok = True)
 
+    model_name = f"model_{args.opt.lower()}_{args.lr.lower()}_{args.lr_gamma.lower()}_{args.momentum.lower()}"
+
     for epoch in range(num_epochs):
         print(f'Epoch {epoch}/{num_epochs - 1}')
         print('-' * 10)
@@ -246,7 +248,7 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
                     "args": args,
                     "epoch": epoch,
                 }
-                torch.save(checkpoint, os.path.join(modelsFolder, f"model_{args.opt.lower()}_{epoch}.pth"))
+                torch.save(checkpoint, os.path.join(modelsFolder, model_name+f"_{epoch}.pth"))
     
     time_elapsed = time.time() - since
     print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
@@ -261,12 +263,12 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
         "losses_val": losses_val,
         "accuracies_val": accuracies_val
     }
-    torch.save(checkpoint, os.path.join(modelsFolder, f"model_{args.opt.lower()}_{epoch}_final.pth"))
+    torch.save(checkpoint, os.path.join(modelsFolder, model_name+"_final.pth"))
 
     # save the results file as a JSON
     results_dict = {"losses_train":losses_train, "accuracies":accuracies, "losses_val":losses_val, "accuracies_val":accuracies_val}
 
-    with open(os.path.join(jsonFolder, f"/model_{args.opt.lower()}_{epoch}_results.text"), "w") as jsonFile:
+    with open(os.path.join(jsonFolder, model_name+f"_results.text"), "w") as jsonFile:
         json.dump(results_dict, jsonFile, sort_keys=True, indent=4) 
 
 
