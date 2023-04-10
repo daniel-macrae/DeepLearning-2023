@@ -19,6 +19,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
 
+import json
 
 
 num_classes = 2 # 0=ball, 1=player
@@ -161,6 +162,9 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
     accuracies = []
     losses_val = []
     accuracies_val = []
+    
+    modelsFolder = os.path.join(args.output_dir, "Models")
+    jsonFolder = os.path.join(args.output_dir, "JSONs")
 
     for epoch in range(num_epochs):
         print(f'Epoch {epoch}/{num_epochs - 1}')
@@ -240,7 +244,7 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
                     "args": args,
                     "epoch": epoch,
                 }
-                torch.save(checkpoint, os.path.join(args.output_dir, f"model_{args.opt.lower()}_{epoch}.pth"))
+                torch.save(checkpoint, os.path.join(modelsFolder, f"model_{args.opt.lower()}_{epoch}.pth"))
     
     time_elapsed = time.time() - since
     print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
@@ -255,7 +259,16 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
         "losses_val": losses_val,
         "accuracies_val": accuracies_val
     }
-    torch.save(checkpoint, os.path.join(args.output_dir, f"model_{args.opt.lower()}_{epoch}_final.pth"))
+    torch.save(checkpoint, os.path.join(modelsFolder, f"model_{args.opt.lower()}_{epoch}_final.pth"))
+
+    # save the results file as a JSON
+    results_dict = {"losses_train":losses_train, "accuracies":accuracies, "losses_val":losses_val, "accuracies_val":accuracies_val}
+
+    with open(os.path.join(jsonFolder, f"/model_{args.opt.lower()}_{epoch}_results.text"), "w") as jsonFile:
+        json.dump(results_dict, jsonFile, sort_keys=True, indent=4) 
+
+
+
     return model, losses_train, accuracies, losses_val, accuracies_val
 
 
@@ -270,6 +283,8 @@ def createModel(args):
 
 if __name__ == '__main__':
     args = get_args_parser().parse_args()
+    os.makedirs(args.output_dir, exist_ok = True)
+    
     model = createModel(args)
     model.to(device)
     criterion = nn.CrossEntropyLoss()
