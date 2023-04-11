@@ -32,7 +32,7 @@ print(device)
 
 
 num_workers = 4 if torch.cuda.is_available() else 0
-batch_size = 64 # LOWER THIS IF NEEDED!
+batch_size = 128 # LOWER THIS IF NEEDED!
 
 train_dir = "Data/train/"
 valid_dir = "Data/valid/"
@@ -42,9 +42,9 @@ validation_dataset = playersDataset(valid_dir)
 test_dataset = playersDataset(test_dir)
 
 # Define the dataloaders for each set
-train_loader = DataLoader(train_dataset, batch_size=batch_size, collate_fn=collate_fn)
-val_loader = DataLoader(validation_dataset, batch_size=batch_size, collate_fn=collate_fn)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, collate_fn=collate_fn)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
+val_loader = DataLoader(validation_dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
 
 
 
@@ -226,6 +226,10 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
                     if phase == 'train':
                         losses.backward()
                         optimizer.step()
+
+                del images
+                del targets
+                torch.cuda.empty_cache()
 
             if(phase == 'train' and scheduler != None):
                 scheduler.step()
