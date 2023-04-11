@@ -32,7 +32,7 @@ print(device)
 
 
 num_workers = 4 if torch.cuda.is_available() else 0
-batch_size = 128 # LOWER THIS IF NEEDED!
+batch_size = 8 # LOWER THIS IF NEEDED!
 
 train_dir = "Data/train/"
 valid_dir = "Data/valid/"
