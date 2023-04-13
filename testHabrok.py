@@ -22,6 +22,7 @@ from torch.optim import lr_scheduler
 import json
 
 
+
 num_classes = 3 # 1=ball, 2=player
 
 
@@ -32,7 +33,7 @@ print(device)
 
 
 num_workers = 4 if torch.cuda.is_available() else 0
-batch_size = 8 # LOWER THIS IF NEEDED!
+batch_size = 64 # LOWER THIS IF NEEDED!
 
 train_dir = "Data/train/"
 valid_dir = "Data/valid/"
@@ -165,6 +166,11 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
     accuracies = []
     losses_val = []
     accuracies_val = []
+    classification_loss_train = []
+    regression_loss_train = []
+    classification_loss_val = []
+    regression_loss_val = []
+
     
     os.makedirs(args.output_dir, exist_ok = True)
     modelsFolder = os.path.join(args.output_dir, "Models")
@@ -172,7 +178,7 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
     os.makedirs(modelsFolder, exist_ok = True)
     os.makedirs(jsonFolder, exist_ok = True)
 
-    model_name = f"model_opt:{args.opt.lower()}_epochs:{args.epochs}_train_backbone:{args.train_backbone}_lr:{args.lr}_lrstepsize:{args.lr_step_size}_lrgamma:{args.lr_gamma}_mom:{args.momentum}"
+    model_name = f"FRCNN_opt:{args.opt.lower()}_epochs:{args.epochs}_train_backbone:{args.train_backbone}_lr:{args.lr}_lrstepsize:{args.lr_step_size}_lrgamma:{args.lr_gamma}_mom:{args.momentum}"
 
     for epoch in range(num_epochs):
         print(f'Epoch {epoch}/{num_epochs - 1}')
@@ -195,6 +201,8 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
 
             running_loss = 0.0
             running_corrects = 0
+            classification_loss = 0.0
+            regression_loss = 0.0
 
             # Iterate over data.
             for i, (images, targets) in enumerate(tqdm(dataSource)):
@@ -220,6 +228,8 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
 
                     # print(losses)
                     running_loss += float(losses)
+                    classification_loss += loss_dict['classification']
+                    regression_loss += loss_dict['bbox_regression']
 
 
                     # backward + optimize only if in training phase
@@ -237,9 +247,15 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
             epoch_loss = running_loss / dataset_size
             if(phase == 'train'):
                 losses_train.append(epoch_loss)
+                classification_loss_train.append(classification_loss)
+                regression_loss_train.append(regression_loss)
+    
+                
                 # accuracies.append(epoch_acc)
             elif(phase == 'val'):
                 losses_val.append(epoch_loss)
+                classification_loss_val.append(classification_loss)
+                regression_loss_val.append(regression_loss)
                 # accuracies_val.append(epoch_acc)
             print(f'{phase} Loss: {epoch_loss:.4f}')
             
@@ -271,7 +287,11 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
         "losses_train": losses_train,
         "accuracies_train": accuracies,
         "losses_val": losses_val,
-        "accuracies_val": accuracies_val
+        "accuracies_val": accuracies_val,
+        "classification_loss_train": classification_loss_train,
+        "regression_loss_train": regression_loss_train,
+        "classification_loss_val": classification_loss_val,
+        "regression_loss_val": regression_loss_val
     }
     torch.save(checkpoint, os.path.join(modelsFolder, model_name+"_final.pth"))
 
@@ -288,12 +308,12 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
 
 def createModel(args):
     model = torchvision.models.detection.ssdlite320_mobilenet_v3_large(weights=None, num_classes=num_classes, weights_backbone=MobileNet_V3_Large_Weights.DEFAULT)
-    # freeze all layers, except the output heads
     
+    # freeze all layers, except the output heads    
     if args.train_backbone == False:
         for param in model.parameters():
             param.requires_grad = False
-        for param in model.head.parameters():
+        for param in model.roi_heads.parameters():
             param.requires_grad = True 
     else:
         for param in model.parameters():
@@ -303,6 +323,7 @@ def createModel(args):
 
 if __name__ == '__main__':
     args = get_args_parser().parse_args()
+    torch.cuda.empty_cache()
     
     model = createModel(args)
     model.to(device)
@@ -319,3 +340,4 @@ if __name__ == '__main__':
     scheduler = lr_scheduler.StepLR(optimizer, step_size=args.lr_step_size, gamma=args.lr_gamma)
     num_epochs = args.epochs
     model, losses, accuracies, losses_val, accuracies_val = train_model(model, criterion, optimizer, args, scheduler, num_epochs=num_epochs)
+    torch.cuda.empty_cache()
