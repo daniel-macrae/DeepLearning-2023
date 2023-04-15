@@ -11,4 +11,7 @@ module load Miniconda3
 conda create -n SSDLiteEnv python=3.8
 source activate SSDLiteEnv
 pip install -r requirements.txt
+python trainModel.py --opt "adam" --train-backbone False --lr 0.0001 --lr-step-size 5
+python trainModel.py --train-backbone False --lr 0.0001 --lr-step-size 5
+python trainModel.py --opt "adam" --train-backbone True --lr 0.0001 --lr-step-size 5
 python trainModel.py --train-backbone True --lr 0.0001 --lr-step-size 5
