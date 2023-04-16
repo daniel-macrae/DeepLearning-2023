@@ -6,3 +6,4 @@ football-players-detection/*
 .ipynb_checkpoints
 __pycache__
 Results/*
+Videos/*
