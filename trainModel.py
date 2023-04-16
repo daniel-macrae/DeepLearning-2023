@@ -2,14 +2,8 @@ import torchvision
 import torch
 from torchvision.models.detection.ssdlite import SSDLite320_MobileNet_V3_Large_Weights
 from torchvision.models.mobilenetv3 import mobilenet_v3_large, MobileNet_V3_Large_Weights
-
-
-
 from torch.utils.data import DataLoader
 from src.dataLoading import playersDataset, collate_fn   # these are custom for our dataset
-
-
-
 import time
 import os
 import copy
@@ -18,19 +12,14 @@ from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
-
 import json
-
 
 
 num_classes = 3 # 1=ball, 2=player
 
-
 # set the device (GPU is much faster)
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 print(device)
-
-
 
 num_workers = 4 if torch.cuda.is_available() else 0
 batch_size = 64 # LOWER THIS IF NEEDED!
@@ -49,15 +38,11 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, coll
 
 
 
-# these need changing, probably
-
-
 def get_args_parser(add_help=True):
     import argparse
 
     parser = argparse.ArgumentParser(description="PyTorch Detection Training", add_help=add_help)
-
-    
+ 
     parser.add_argument("--epochs", default=40, type=int, metavar="N", help="number of total epochs to run")
     
     parser.add_argument("--opt", default="sgd", type=str, help="optimizer")
@@ -73,13 +58,6 @@ def get_args_parser(add_help=True):
     parser.add_argument(
         "--lr-step-size", default=8, type=int, help="decrease lr every step-size epochs (multisteplr scheduler only)"
     )
-    #parser.add_argument(
-    #    "--lr-steps",
-    #    default=[16, 22],
-    #    nargs="+",
-    #    type=int,
-    #    help="decrease lr every step-size epochs (multisteplr scheduler only)",
-    #)
     parser.add_argument(
         "--lr-gamma", default=0.1, type=float, help="decrease lr by a factor of lr-gamma"
     )
@@ -90,7 +68,6 @@ def get_args_parser(add_help=True):
 def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25):
     since = time.time()
     best_model_wts = copy.deepcopy(model.state_dict())
-    best_acc = 0.0
     best_loss = np.inf
     losses_train = []
     accuracies = []
@@ -130,7 +107,6 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
                 print("EVAL")
 
             running_loss = 0.0
-            running_corrects = 0
             classification_loss = 0.0
             regression_loss = 0.0
 
@@ -153,10 +129,9 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
                     elif(phase == 'val'):
                         with torch.no_grad():
                             loss_dict = model(images, targets)
-                    # print(loss_dict)
+                    
                     losses = sum(loss for loss in loss_dict.values())  # sum the loss for all images of this epoch
 
-                    # print(losses)
                     running_loss += float(losses)
                     classification_loss += loss_dict['classification']
                     regression_loss += loss_dict['bbox_regression']
@@ -181,12 +156,12 @@ def train_model(model, criterion, optimizer, args, scheduler=None, num_epochs=25
                 regression_loss_train.append(regression_loss)
     
                 
-                # accuracies.append(epoch_acc)
+            
             elif(phase == 'val'):
                 losses_val.append(epoch_loss)
                 classification_loss_val.append(classification_loss)
                 regression_loss_val.append(regression_loss)
-                # accuracies_val.append(epoch_acc)
+                
             print(f'{phase} Loss: {epoch_loss:.4f}')
             
             # if phase == 'val' and epoch_acc > best_acc:
